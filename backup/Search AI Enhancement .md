@@ -11,5 +11,5 @@ The opensource AI search platform
 ### Shareable and cached search results for enhanced efficiency.
 ## required Search1API
 
-# 3.  [Search1API](https://www.[search1api.com](https://www.search1api.com/)
+# 3.  [Search1API](https://www.search1api.com/)
 卡在了支付环节，月免1000次的必须要信用卡，国内visa卡没有通过。
