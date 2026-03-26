@@ -93,3 +93,36 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v5
+
+      - name: Verify published content
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          PAGE_URL="${{ steps.deployment.outputs.page_url }}"
+          EXPECTED_POST_URL=$(jq -r '
+            to_entries
+            | map(select(.key|test("^P[0-9]+$")))
+            | max_by(.key|ltrimstr("P")|tonumber)
+            | .value.postUrl
+          ' docs/postList.json)
+
+          echo "Page URL: $PAGE_URL"
+          echo "Expected latest post path: $EXPECTED_POST_URL"
+
+          ok=0
+          for i in {1..12}; do
+            echo "[verify $i/12] checking deployed postList.json..."
+            if curl -fsSL "$PAGE_URL/postList.json" | grep -Fq "$EXPECTED_POST_URL"; then
+              echo "✅ Publish verified: $EXPECTED_POST_URL found on live site"
+              ok=1
+              break
+            fi
+            sleep 10
+          done
+
+          if [ "$ok" -ne 1 ]; then
+            echo "❌ Publish verification failed after retries."
+            echo "Expected path not found on live site: $EXPECTED_POST_URL"
+            exit 1
+          fi
