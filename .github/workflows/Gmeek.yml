@@ -8,11 +8,13 @@ on:
     - cron: "0 16 * * *"
 
 env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
 
 jobs:
   build:
     name: Generate blog
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     if: ${{ github.event.repository.owner.id == github.event.sender.id || github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
@@ -21,9 +23,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      - name: Setup Pages
-        id: pages
-        uses: actions/configure-pages@v5
 
       - name: Get config.json
         run: |
@@ -75,6 +74,8 @@ jobs:
 
   deploy:
     name: Deploy blog
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     needs: build
