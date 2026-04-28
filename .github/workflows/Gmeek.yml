@@ -49,6 +49,27 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r /opt/Gmeek/requirements.txt
 
+      - name: Patch Gmeek.py
+        run: |
+          python3 << 'PATCH_EOF'
+          content = open('/opt/Gmeek/Gmeek.py', 'r').read()
+          # Fix DeprecationWarning: use auth= instead of login_or_token
+          content = content.replace(
+              'from github import Github',
+              'from github import Github, Auth'
+          )
+          content = content.replace(
+              'Github(self.options.github_token)',
+              'Github(auth=Auth.Token(self.options.github_token))'
+          )
+          # Fix KeyError: None when issue has no labels
+          old = 'listJsonName=self.addOnePostJson(issue)\n        self.createPostHtml'
+          fix = 'listJsonName=self.addOnePostJson(issue)\n        if listJsonName is None:\n            print("====== issue has no labels, skipped ======")\n            return\n        self.createPostHtml'
+          content = content.replace(old, fix)
+          open('/opt/Gmeek/Gmeek.py', 'w').write(content)
+          print("Gmeek.py patched successfully")
+          PATCH_EOF
+
       - name: Generate new html
         run: |
           ISSUE_NUM='${{ github.event.issue.number || '' }}'
